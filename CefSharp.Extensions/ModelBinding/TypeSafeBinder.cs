@@ -264,20 +264,20 @@ namespace CefSharp.Extensions.ModelBinding
             if (typeof(IDictionary<string, object>).IsAssignableFrom(javaScriptType))
             {
                 // all of the public and assignable Properties from the Destination Type
-                var destinationTypeMembers = destinationType.CollectEncapsulatedProperties().ToList();
+                var destinationTypeProperties = destinationType.GetValidProperties().ToList();
                 // loop over the Javascript object
                 foreach (var javaScriptMember in (IDictionary<string, object>)javaScriptObject)
                 {
                     // now for every Javascript member we try to find it's corresponding .NET member on the destination Type 
-                    foreach (var destinationTypeMember in destinationTypeMembers)
+                    foreach (var destinationTypeProperty in destinationTypeProperties)
                     {
                         // make sure the destinationTypeMember key (name) is an EXACT match to what would have been bound to the window
-                        if (javaScriptMember.Key.Equals(destinationTypeMember.ConvertNameToCamelCase()))
+                        if (javaScriptMember.Key.Equals(destinationTypeProperty.ConvertNameToCamelCase()))
                         {
                             // bind the Javascript members value to to the destination Type 
-                            var val = Bind(javaScriptMember.Value, destinationTypeMember.Type);
+                            var val = Bind(javaScriptMember.Value, destinationTypeProperty.PropertyType);
                             // and then set it on the instance of the destination type we created
-                            destinationTypeMember.SetValue(model, val);
+                            destinationTypeProperty.SetValue(model, val);
                         }
                     }
                     // if we failed to find a member on the .NET type whose name is equal to the Javascript member, throw.

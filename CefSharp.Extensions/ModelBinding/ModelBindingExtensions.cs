@@ -66,20 +66,6 @@ namespace CefSharp.Extensions.ModelBinding
         }
 
         /// <summary>
-        /// Builds a <see cref="BindingMemberInfo"/> collection from all of the valid properties returned from <see cref="ModelBindingExtensions.GetValidProperties(Type)"/>
-        /// </summary>
-        /// <param name="type">The type the collection will be based on..</param>
-        /// <returns>The <see cref="BindingMemberInfo"/> collection.</returns>
-        /// <remarks>
-        /// <see cref="Collect"/> is slightly misleading in it's description, as fields are quite different than properties.
-        /// This method only returns properties that allow for encapsulation which is more aligned with how something like JSON.NET works.
-        /// </remarks>
-        public static IEnumerable<BindingMemberInfo> CollectEncapsulatedProperties(this Type type)
-        {
-            return type.GetValidProperties().Select(property => new BindingMemberInfo(property));
-        }
-
-        /// <summary>
         /// Attempts to convert a string or number representation of an <see cref="Enum"/> field to an actual instance. 
         /// <br>Please note, this method will NOT fallback to the default value of the destination enum.</br>
         /// <br>If the source object cannot be marshaled, then this method will throw exceptions to prevent undefined behavior.</br>
@@ -431,18 +417,8 @@ namespace CefSharp.Extensions.ModelBinding
         /// <returns></returns>
         public static bool IsCustomStruct(this Type source)
         {
-            // not entirely full-proof.
+            // not entirely foolproof.
             return source.Namespace != null && (source.IsValueType && !source.IsPrimitive && !source.IsEnum && !source.Namespace.StartsWith("System."));
-        }
-
-        /// <summary>
-        /// Converts the name property of <see cref="BindingMemberInfo"/> into camelCase
-        /// </summary>
-        /// <param name="member">the member info which will have it's name converted</param>
-        /// <returns>the camel case version of the method name.</returns>
-        public static string ConvertNameToCamelCase(this BindingMemberInfo member)
-        {
-            return ConvertNameToCamelCase(member.Name);
         }
 
         /// <summary>
