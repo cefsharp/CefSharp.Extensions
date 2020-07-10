@@ -63,6 +63,11 @@ namespace CefSharp.Extensions.ModelBinding
             // if the source object is null and is not an enum, then there isn't anything left to do.
             if (javaScriptObject == null)
             {
+                if (destinationType.IsValueType)
+                {
+                    //For value types (int, double, etc) we cannot return null,
+                    throw new ModelBindingException(null, destinationType, BindingFailureCode.SourceObjectNullOrEmpty);
+                }
                 return null;
             }
             // get the underlying type for the incoming object 
@@ -214,27 +219,14 @@ namespace CefSharp.Extensions.ModelBinding
             // loop over the collection and assign the items to their corresponding types
             foreach (var javaScriptItem in javaScriptCollection)
             {
-                // if the value is null then we'll add null to the collection,
-                if (javaScriptItem == null)
-                {
-                    // for value types like int we'll create the default value and assign that as we cannot assign null
-                    model.Add(genericType.IsValueType ? Activator.CreateInstance(genericType) : null);
-                }
-                else
-                {
-                    var valueType = javaScriptItem.GetType();
-                    // if the collection item is a list or dictionary then we'll attempt to bind it
-                    if (typeof(IDictionary<string, object>).IsAssignableFrom(valueType) || typeof(IList<object>).IsAssignableFrom(valueType))
-                    {
-                        var subModel = Bind(javaScriptItem, genericType);
-                        model.Add(subModel);
-                    }
-                    else
-                    {
-                        model.Add(javaScriptItem);
-                    }
-                }
+                //Previously we only called bind for IDictionary<string, object>
+                // and IList<object>, we now bind for all values to allow for
+                // type conversion like int -> double where javascript gives
+                // us a mixed array of types, some int, some double (Issue #3129)
+                var result = Bind(javaScriptItem, genericType);
+                model.Add(result);
             }
+
             // if the destination type is actually an array and not a list, then convert the mode above to an array
             if (destinationType.IsArray())
             {
