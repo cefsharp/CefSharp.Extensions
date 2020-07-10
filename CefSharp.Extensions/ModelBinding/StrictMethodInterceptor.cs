@@ -17,7 +17,7 @@ namespace CefSharp.Extensions.ModelBinding
     /// Asynchronous <see cref="Task{TResult}"/> are also supported and can be bound to the window to allow support for promises without <see cref="CefSharpSettings.ConcurrentTaskExecution"/><br/>
     /// The Javascript side will get back values it can use without forcing boilerplate on users.
     /// </summary>
-    public class TypeSafeInterceptor : IMethodInterceptor
+    public class StrictMethodInterceptor : IMethodInterceptor
     {
         /// <summary>
         /// Called before the method is invokved. 
@@ -206,6 +206,7 @@ namespace CefSharp.Extensions.ModelBinding
             }
             return javaScriptObject;
         }
+
         /// <summary>
         /// Javascript does not natively support the <see cref="Version"/> class so it is serialized to a string here
         /// </summary>

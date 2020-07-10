@@ -23,7 +23,7 @@ namespace CefSharp.Extensions.ModelBinding
     /// <remarks>
     /// This binder has no backwards compatibility with the <see cref="DefaultBinder"/> due to changes in how data member are marshaled.
     /// </remarks>
-    public class TypeSafeBinder : IBinder
+    public class StrictModelBinder : IBinder
     {
         /// <summary>
         /// Used to try and convert a generic type to an array via Reflection.
@@ -33,7 +33,7 @@ namespace CefSharp.Extensions.ModelBinding
         /// <summary>
         /// Register our Custom System.ComponentModel Type Converters
         /// </summary>
-        static TypeSafeBinder()
+        static StrictModelBinder()
         {
             BinderGuidConverter.Register();
             BinderVersionConverter.Register();
@@ -107,7 +107,7 @@ namespace CefSharp.Extensions.ModelBinding
         ///     to.
         /// </param>
         /// <param name="javaScriptObject">A collection that contains all the components of the tuple.</param>
-        /// <returns>A tuple I'd fucking hope</returns>
+        /// <returns>A Tuple instance</returns>
         private object BindValueTuple(Type destinationType, object javaScriptObject)
         {
             if (!(javaScriptObject is IList<object> components))
