@@ -40,24 +40,24 @@ namespace CefSharp.Extensions.ModelBinding
         }
 
         ///<inheritdoc/>
-        object IBinder.Bind(object javaScriptObject, Type nativeType)
+        object IBinder.Bind(object javaScriptObject, Type destinationType)
         {
-            return Bind(javaScriptObject, nativeType);
+            return Bind(javaScriptObject, destinationType);
         }
 
         /// <summary>
         /// Attempts to bind a Javascript object into a corresponding .NET type.
         /// </summary>
         /// <param name="javaScriptObject">An instance of the Javascript object.</param>
-        /// <param name="nativeType">The type this method will try to create an instance of using the Javascript object.</param>
-        /// <returns>An instance of the native type.</returns>
-        protected virtual object Bind(object javaScriptObject, Type nativeType)
+        /// <param name="destinationType">The type this method will try to create an instance of using the Javascript object.</param>
+        /// <returns>An instance of <paramref name="destinationType"/> or null.</returns>
+        protected virtual object Bind(object javaScriptObject, Type destinationType)
         {
             // if the intended destination is an enumeration, we can try and get the corresponding member upfront.
             // internally this will throw a TypeBindingException if it runs into issues. See the documentation for more information.
-            if (nativeType.IsEnum)
+            if (destinationType.IsEnum)
             {
-                return nativeType.CreateEnumMember(javaScriptObject);
+                return destinationType.CreateEnumMember(javaScriptObject);
             }
 
             // if the source object is null and is not an enum, then there isn't anything left to do.
@@ -69,7 +69,7 @@ namespace CefSharp.Extensions.ModelBinding
             var javaScriptType = javaScriptObject.GetType();
 
             // if the object can be directly assigned to the destination type, then return and let the runtime handle the rest.
-            if (nativeType.IsAssignableFrom(javaScriptType))
+            if (destinationType.IsAssignableFrom(javaScriptType))
             {
                 return javaScriptObject;
             }
@@ -77,16 +77,16 @@ namespace CefSharp.Extensions.ModelBinding
             // custom Type converters should be registered in the constructor before calling this
             var typeConverter = TypeDescriptor.GetConverter(javaScriptType);
             // If the object can be converted to the target (=> double to int, string to Guid), go for it.
-            if (typeConverter.CanConvertTo(nativeType))
+            if (typeConverter.CanConvertTo(destinationType))
             {
-                return typeConverter.ConvertTo(javaScriptObject, nativeType);
+                return typeConverter.ConvertTo(javaScriptObject, destinationType);
             }
             // collections have to be unwound 
-            if (nativeType.IsCollection() || nativeType.IsArray() || nativeType.IsEnumerable())
+            if (destinationType.IsCollection() || destinationType.IsArray() || destinationType.IsEnumerable())
             {
-                return BindCollection(nativeType, javaScriptType, javaScriptObject);
+                return BindCollection(destinationType, javaScriptType, javaScriptObject);
             }
-            return BindObject(nativeType, javaScriptType, javaScriptObject);
+            return BindObject(destinationType, javaScriptType, javaScriptObject);
         }
 
 
@@ -102,13 +102,13 @@ namespace CefSharp.Extensions.ModelBinding
         ///     <see cref="T:ValueTuple{T1, T2, T3, T4, T5, T6, T7}" /><br />
         ///     <see cref="T:ValueTuple{T1, T2, T3, T4, T5, T6, T7, TRest}" /><br />
         /// </summary>
-        /// <param name="nativeType">
+        /// <param name="destinationType">
         ///     the generic <see cref="T:ValueTuple" /> the <paramref name="javaScriptObject" /> will be bound
         ///     to.
         /// </param>
         /// <param name="javaScriptObject">A collection that contains all the components of the tuple.</param>
         /// <returns>A tuple I'd fucking hope</returns>
-        private object BindValueTuple(Type nativeType, object javaScriptObject)
+        private object BindValueTuple(Type destinationType, object javaScriptObject)
         {
             if (!(javaScriptObject is IList<object> components))
             {
@@ -118,7 +118,7 @@ namespace CefSharp.Extensions.ModelBinding
             // the zero index of the tuple
             const int index = 0;
             // all of the component types
-            var types = (from field in nativeType.GetTypeInfo().DeclaredFields where field.IsPublic && !field.IsStatic select field.FieldType).ToArray();
+            var types = (from field in destinationType.GetTypeInfo().DeclaredFields where field.IsPublic && !field.IsStatic select field.FieldType).ToArray();
             if (components.Count != types.Length)
             {
                 throw new ArgumentOutOfRangeException($"The source object contains {components.Count} components. The number of component types found is {types.Length}.");
@@ -130,7 +130,7 @@ namespace CefSharp.Extensions.ModelBinding
             // So we use reflection to dynamically build the ValueTuple.Create call with our generic arguments.
             object Create(params object[] args)
             {
-                return nativeType.GetMethods().First(m =>
+                return destinationType.GetMethods().First(m =>
                 {
                     if (!string.Equals(m.Name, "Create", StringComparison.Ordinal))
                     {
@@ -173,32 +173,32 @@ namespace CefSharp.Extensions.ModelBinding
         /// <summary>
         /// Binds a Javascript collection to a .NET collection
         /// </summary>
-        /// <param name="nativeType">The native collection type.</param>
+        /// <param name="destinationType">The collection type.</param>
         /// <param name="javaScriptType">The underlying type for the Javascript object.</param>
-        /// <param name="javaScriptObject">The Javascript object that will be unwound to the native collection type.</param>
+        /// <param name="javaScriptObject">The Javascript object that will be converted to <paramref name="destinationType"/>.</param>
         /// <returns>
         /// A .NET collection which should have all the same value as the <paramref name="javaScriptObject"/>
         /// </returns>
-        protected virtual object BindCollection(Type nativeType, Type javaScriptType, object javaScriptObject)
+        protected virtual object BindCollection(Type destinationType, Type javaScriptType, object javaScriptObject)
         {
             // if the Javascript object isn't a collection throw, we shouldn't have ended up here.
             if (!(javaScriptObject is ICollection javaScriptCollection))
             {
-                throw new ModelBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.SourceNotAssignable);
+                throw new ModelBindingException(javaScriptObject.GetType(), destinationType, BindingFailureCode.SourceNotAssignable);
             }
 
             Type genericType;
 
-            // check if the native type is a generic
-            if (nativeType.GetTypeInfo().IsGenericType)
+            // check if the destination type is a generic
+            if (destinationType.GetTypeInfo().IsGenericType)
             {
-                // get the generic backing type of the native type
-                genericType = nativeType.GetGenericArguments().FirstOrDefault();
+                // get the generic backing type of the destination type
+                genericType = destinationType.GetGenericArguments().FirstOrDefault();
             }
             else
             {
                 // otherwise it's a collection, and we get the backing type for that.
-                var enumerable = nativeType.GetInterfaces().Where(i => i.GetTypeInfo().IsGenericType).FirstOrDefault(i => i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+                var enumerable = destinationType.GetInterfaces().Where(i => i.GetTypeInfo().IsGenericType).FirstOrDefault(i => i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
                 genericType = enumerable?.GetGenericArguments()?.FirstOrDefault();
             }
 
@@ -235,8 +235,8 @@ namespace CefSharp.Extensions.ModelBinding
                     }
                 }
             }
-            // if the native type is actually an array and not a list, then convert the mode above to an array
-            if (nativeType.IsArray())
+            // if the destination type is actually an array and not a list, then convert the mode above to an array
+            if (destinationType.IsArray())
             {
                 var genericToArrayMethod = ToArrayMethodInfo.MakeGenericMethod(genericType);
                 return genericToArrayMethod.Invoke(null, new object[] { model });
@@ -248,41 +248,41 @@ namespace CefSharp.Extensions.ModelBinding
         /// <summary>
         /// Bind a Javascript object to a corresponding .NET type
         /// </summary>
-        /// <param name="nativeType">The native type to bind against.</param>
-        /// <param name="javaScriptType">The native type inferred from the Javascript object.</param>
+        /// <param name="destinationType">The type to bind against.</param>
+        /// <param name="javaScriptType">The type inferred from the Javascript object.</param>
         /// <param name="javaScriptObject">The Javascript object that will be bound.</param>
         /// <returns>
         /// An instance of the .NET type which should have all the same values as the <paramref name="javaScriptObject"/>
         /// </returns>
-        protected virtual object BindObject(Type nativeType, Type javaScriptType, object javaScriptObject)
+        protected virtual object BindObject(Type destinationType, Type javaScriptType, object javaScriptObject)
         {
-            // create an instance of our native type. 
+            // create an instance of our destination type. 
             // use nonPublic: true to signal we want public and non-public default constructors to activate
-            var model = Activator.CreateInstance(nativeType, true);
+            var model = Activator.CreateInstance(destinationType, true);
 
             // If the object type is a dictionary then attempt to bind all the members of the Javascript object to their C# counterpart 
             if (typeof(IDictionary<string, object>).IsAssignableFrom(javaScriptType))
             {
-                // all of the public and assignable Properties from the native Type
-                var nativeMembers = nativeType.CollectEncapsulatedProperties().ToList();
+                // all of the public and assignable Properties from the Destination Type
+                var destinationTypeMembers = destinationType.CollectEncapsulatedProperties().ToList();
                 // loop over the Javascript object
                 foreach (var javaScriptMember in (IDictionary<string, object>)javaScriptObject)
                 {
-                    // now for every Javascript member we try to find it's corresponding .NET member on the native Type 
-                    foreach (var nativeMember in nativeMembers)
+                    // now for every Javascript member we try to find it's corresponding .NET member on the destination Type 
+                    foreach (var destinationTypeMember in destinationTypeMembers)
                     {
-                        // make sure the native members name is an EXACT match to what would have been bound to the window
-                        if (javaScriptMember.Key.Equals(nativeMember.ConvertNameToCamelCase()))
+                        // make sure the destinationTypeMember key (name) is an EXACT match to what would have been bound to the window
+                        if (javaScriptMember.Key.Equals(destinationTypeMember.ConvertNameToCamelCase()))
                         {
-                            // bind the Javascript members value to to the native Type 
-                            var nativeValue = Bind(javaScriptMember.Value, nativeMember.Type);
-                            // and then set it on the instance of the native type we created
-                            nativeMember.SetValue(model, nativeValue);
+                            // bind the Javascript members value to to the destination Type 
+                            var val = Bind(javaScriptMember.Value, destinationTypeMember.Type);
+                            // and then set it on the instance of the destination type we created
+                            destinationTypeMember.SetValue(model, val);
                         }
                     }
                     // if we failed to find a member on the .NET type whose name is equal to the Javascript member, throw.
                     // most likely the end-user is not using proper conventions on one side.
-                    throw new ModelBindingException(javaScriptType, nativeType, BindingFailureCode.MemberNotFound, javaScriptMember.Key);
+                    throw new ModelBindingException(javaScriptType, destinationType, BindingFailureCode.MemberNotFound, javaScriptMember.Key);
                 }
             }
             return model;

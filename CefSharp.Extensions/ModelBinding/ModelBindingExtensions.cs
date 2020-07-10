@@ -84,7 +84,7 @@ namespace CefSharp.Extensions.ModelBinding
         /// <br>Please note, this method will NOT fallback to the default value of the destination enum.</br>
         /// <br>If the source object cannot be marshaled, then this method will throw exceptions to prevent undefined behavior.</br>
         /// </summary>
-        /// <param name="nativeType">The type of the <see cref="Enum"/> to create an instance of.</param>
+        /// <param name="destinationType">The type of the <see cref="Enum"/> to create an instance of.</param>
         /// <param name="javaScriptObject">The object that will be marshaled into the destination type.</param>
         /// <returns>
         /// The a member on the destination <see cref="Enum"/> the corresponds to the source object.
@@ -94,11 +94,11 @@ namespace CefSharp.Extensions.ModelBinding
         /// <remarks>
         /// This method does not rely on Enum.Parse and therefore will never raise any first or second chance exception.
         /// </remarks>
-        public static object CreateEnumMember(this Type nativeType, object javaScriptObject)
+        public static object CreateEnumMember(this Type destinationType, object javaScriptObject)
         {
-            if (nativeType == null)
+            if (destinationType == null)
             {
-                throw new ArgumentNullException(nameof(nativeType));
+                throw new ArgumentNullException(nameof(destinationType));
             }
 
             if (javaScriptObject == null)
@@ -106,52 +106,52 @@ namespace CefSharp.Extensions.ModelBinding
                 throw new ArgumentNullException(nameof(javaScriptObject));
             }
 
-            if (!nativeType.IsEnum)
+            if (!destinationType.IsEnum)
             {
-                throw new ModelBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.NoEnumAtDestinationType);
+                throw new ModelBindingException(javaScriptObject.GetType(), destinationType, BindingFailureCode.NoEnumAtDestinationType);
             }
 
             if (!(javaScriptObject is string) && !javaScriptObject.IsEnumIntegral())
             {
-                throw new ModelBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.SourceNotAssignable);
+                throw new ModelBindingException(javaScriptObject.GetType(), destinationType, BindingFailureCode.SourceNotAssignable);
             }
 
             // if the source object is a number, then these is the only steps we need to run
             if (javaScriptObject.IsEnumIntegral())
             {
                 // checks if the number exist within the destination enumeration 
-                if (Enum.IsDefined(nativeType, javaScriptObject))
+                if (Enum.IsDefined(destinationType, javaScriptObject))
                 {
                     // and if it does convert and return it.
-                    return Enum.ToObject(nativeType, javaScriptObject);
+                    return Enum.ToObject(destinationType, javaScriptObject);
                 }
                 // we're throwing because the number is not defined in the enumeration and defaulting to the first member
                 // can cause some serious unintended side effects if a method relies on the enum member to be accurate.
-                throw new ModelBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.NumberNotDefinedInEnum);
+                throw new ModelBindingException(javaScriptObject.GetType(), destinationType, BindingFailureCode.NumberNotDefinedInEnum);
             }
 
             var javaScriptString = ((string)javaScriptObject).Trim();
             // empty strings are not supported 
             if (javaScriptString.Length == 0)
             {
-                throw new ModelBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.StringNotDefinedInEnum);
+                throw new ModelBindingException(javaScriptObject.GetType(), destinationType, BindingFailureCode.StringNotDefinedInEnum);
             }
-            var destinationMembers = Enum.GetNames(nativeType);
+            var destinationMembers = Enum.GetNames(destinationType);
             // make sure the enum is actually defined and has members
             if (destinationMembers.Length == 0)
             {
-                throw new ModelBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.DestinationEnumEmpty);
+                throw new ModelBindingException(javaScriptObject.GetType(), destinationType, BindingFailureCode.DestinationEnumEmpty);
             }
             // the underlying integral type is important as enums can be things other than int
-            var underlyingType = Enum.GetUnderlyingType(nativeType);
+            var underlyingType = Enum.GetUnderlyingType(destinationType);
             // these are all the values of all the members, they have matching indexs
-            var destinationValues = Enum.GetValues(nativeType);
+            var destinationValues = Enum.GetValues(destinationType);
 
             // it is expected that someone might improperly implement their enum with flags and not explicitly define it. 
             // so to prevent crashing or invalid values from being returned, we don't try to parse flags unless the type has the flags attribute. 
-            if (!nativeType.IsDefined(typeof(FlagsAttribute), true) && javaScriptString.IndexOfAny(EnumSeparators) < 0)
+            if (!destinationType.IsDefined(typeof(FlagsAttribute), true) && javaScriptString.IndexOfAny(EnumSeparators) < 0)
             {
-                return StringToEnumMember(nativeType, underlyingType, destinationMembers, destinationValues, javaScriptString);
+                return StringToEnumMember(destinationType, underlyingType, destinationMembers, destinationValues, javaScriptString);
             }
 
             // split the string by the default separators so we can parse the tokens 
@@ -159,7 +159,7 @@ namespace CefSharp.Extensions.ModelBinding
             // the source string is malformed or doesn't contain entries, so we cannot continue.
             if (tokens.Length == 0)
             {
-                throw new ModelBindingException(javaScriptString.GetType(), nativeType, BindingFailureCode.SourceObjectNullOrEmpty);
+                throw new ModelBindingException(javaScriptString.GetType(), destinationType, BindingFailureCode.SourceObjectNullOrEmpty);
             }
 
             ulong ul = 0;
@@ -174,7 +174,7 @@ namespace CefSharp.Extensions.ModelBinding
 
                 // either we're going to get back the enum because the string had separator but one token
                 // or the integral representation of a token, which leads to us forming the actual enum member after all tokens are parsed.
-                var tokenValue = StringToEnumMember(nativeType, underlyingType, destinationMembers, destinationValues, token);
+                var tokenValue = StringToEnumMember(destinationType, underlyingType, destinationMembers, destinationValues, token);
 
                 ulong tokenUl;
                 // for flags we need to do bitwise operations on the found values.
@@ -200,14 +200,14 @@ namespace CefSharp.Extensions.ModelBinding
                     }
                     default:
                     {
-                        throw new ModelBindingException(typeCode.ToType(), nativeType, BindingFailureCode.EnumIntegralNotFound);
+                        throw new ModelBindingException(typeCode.ToType(), destinationType, BindingFailureCode.EnumIntegralNotFound);
                     }
                 }
                 // append the token to the overall value
                 ul |= tokenUl;
             }
             // convert the flag to the value of our destination enum
-            return Enum.ToObject(nativeType, ul);
+            return Enum.ToObject(destinationType, ul);
         }
 
         /// <summary>
