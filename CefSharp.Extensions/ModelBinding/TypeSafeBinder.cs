@@ -14,7 +14,7 @@ using CefSharp.ModelBinding;
 namespace CefSharp.Extensions.ModelBinding
 {
     /// <summary>
-    /// This class is responsible for marshaling Javascript objects into their corresponding .NET type. 
+    /// This class is responsible for marshaling a Javascript object into it's corresponding .NET type. 
     /// </summary>
     /// <remarks>
     /// This binder has no backwards compatibility with the <see cref="DefaultBinder"/> due to changes in how data member are marshaled.
@@ -23,17 +23,14 @@ namespace CefSharp.Extensions.ModelBinding
     {
         /// <summary>
         /// Used to try and convert a generic type to an array via Reflection.
-        /// </summary>
-        private static readonly MethodInfo ToArrayMethodInfo = typeof(Enumerable).GetMethod("ToArray", BindingFlags.Public | BindingFlags.Static);
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="TypeSafeBinder"/> and registers converters with <see cref="TypeDescriptor"/> <br/>
         /// This binder can reliably marshal data between the Javascript and .NET domains. <br/>
         /// For example it provides interoperability for Typescript, Javascript, and C# style conventions without making you drop conventions in one of your languages. <br/>
         /// It will also handle types like <see cref="Guid"/> or <see cref="Enum"/> fields that have flags. <br/>
         /// Finally it ensure there is type safety by throwing <see cref="ModelBindingException"/> whenever data is malformed so you can catch issues in your code.
         /// </summary>
-        public TypeSafeBinder()
+        private static readonly MethodInfo ToArrayMethodInfo = typeof(Enumerable).GetMethod("ToArray", BindingFlags.Public | BindingFlags.Static);
+
+        static TypeSafeBinder()
         {
             BinderGuidConverter.Register();
             BinderVersionConverter.Register();
