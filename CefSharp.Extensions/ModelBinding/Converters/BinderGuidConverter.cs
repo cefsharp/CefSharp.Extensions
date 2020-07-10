@@ -79,7 +79,7 @@ namespace CefSharp.Extensions.ModelBinding.Converters
         /// </summary>
         internal static void Register()
         {
-           TypeDescriptor.AddAttributes(typeof(string), new TypeConverterAttribute(typeof(BinderGuidConverter)));
+            TypeDescriptor.AddAttributes(typeof(string), new TypeConverterAttribute(typeof(BinderGuidConverter)));
         }
     }
 }

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using CefSharp.ModelBinding;
 
 namespace CefSharp.Extensions.ModelBinding
 {
@@ -18,6 +17,31 @@ namespace CefSharp.Extensions.ModelBinding
         /// These are commonly used separators to assist that process.
         /// </summary>
         private static readonly char[] EnumSeparators = { '|', ',', ';', '+', ' ' };
+
+        /// <summary>
+        /// ReadOnly Dictionary that maps <see cref="TypeCode"/> members to their corresponding <see cref="Type"/> instance.
+        /// </summary>
+        private static readonly IReadOnlyDictionary<TypeCode, Type> TypeCodeToTypeMap = new Dictionary<TypeCode, Type>
+        {
+            { TypeCode.Boolean, typeof(bool) },
+            { TypeCode.Byte, typeof(byte) },
+            { TypeCode.Char, typeof(char) },
+            { TypeCode.DateTime, typeof(DateTime) },
+            { TypeCode.DBNull, typeof(DBNull) },
+            { TypeCode.Decimal, typeof(decimal) },
+            { TypeCode.Double, typeof(double) },
+            { TypeCode.Empty, null },
+            { TypeCode.Int16, typeof(short) },
+            { TypeCode.Int32, typeof(int) },
+            { TypeCode.Int64, typeof(long) },
+            { TypeCode.Object, typeof(object) },
+            { TypeCode.SByte, typeof(sbyte) },
+            { TypeCode.Single, typeof(float) },
+            { TypeCode.String, typeof(string) },
+            { TypeCode.UInt16, typeof(ushort) },
+            { TypeCode.UInt32, typeof(uint) },
+            { TypeCode.UInt64, typeof(ulong) }
+        };
 
         /// <summary>
         /// Returns all the public properties of an underlying type that can be read and written to.
@@ -313,31 +337,6 @@ namespace CefSharp.Extensions.ModelBinding
             }
             throw new ModelBindingException(typeof(string), destinationType, BindingFailureCode.SourceNotAssignable);
         }
-
-        /// <summary>
-        /// ReadOnly Dictionary that maps <see cref="TypeCode"/> members to their corresponding <see cref="Type"/> instance.
-        /// </summary>
-        private static readonly IReadOnlyDictionary<TypeCode, Type> TypeCodeToTypeMap = new Dictionary<TypeCode, Type>
-        {
-            { TypeCode.Boolean, typeof(bool) },
-            { TypeCode.Byte, typeof(byte) },
-            { TypeCode.Char, typeof(char) },
-            { TypeCode.DateTime, typeof(DateTime) },
-            { TypeCode.DBNull, typeof(DBNull) },
-            { TypeCode.Decimal, typeof(decimal) },
-            { TypeCode.Double, typeof(double) },
-            { TypeCode.Empty, null },
-            { TypeCode.Int16, typeof(short) },
-            { TypeCode.Int32, typeof(int) },
-            { TypeCode.Int64, typeof(long) },
-            { TypeCode.Object, typeof(object) },
-            { TypeCode.SByte, typeof(sbyte) },
-            { TypeCode.Single, typeof(float) },
-            { TypeCode.String, typeof(string) },
-            { TypeCode.UInt16, typeof(ushort) },
-            { TypeCode.UInt32, typeof(uint) },
-            { TypeCode.UInt64, typeof(ulong) }
-        };
 
         /// <summary>
         /// Convert a TypeCode ordinal into it's corresponding <see cref="Type"/> instance.
