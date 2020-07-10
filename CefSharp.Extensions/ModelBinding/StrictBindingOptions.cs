@@ -5,7 +5,8 @@
 namespace CefSharp.Extensions.ModelBinding
 {
     /// <summary>
-    /// A 
+    /// StrictBindingOptions is uses the <see cref="StrictModelBinder"/> and <see cref="StrictMethodInterceptor"/>
+    /// for the <see cref="BindingOptions.Binder"/> and <see cref="BindingOptions.MethodInterceptor"/>
     /// </summary>
     public class StrictBindingOptions : BindingOptions
     {

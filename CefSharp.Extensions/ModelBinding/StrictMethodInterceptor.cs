@@ -26,6 +26,7 @@ namespace CefSharp.Extensions.ModelBinding
         /// <param name="parameters">paramaters to be passed to <paramref name="method"/></param>
         /// <param name="methodName">Name of the method to be called</param>
         /// <returns>The method result</returns>
+        /// TODO: Rewrite this to avoid using another thread/blocking
         public object Intercept(Func<object[], object> method, object[] parameters, string methodName)
         {
             // run the asynchronous interceptor without worrying about creating a deadlock 
@@ -115,38 +116,59 @@ namespace CefSharp.Extensions.ModelBinding
         private static object SerializeObject(object value)
         {
             if (value == null)
+            {
                 return null;
+            }
+
             var resultType = value.GetType();
             // check if the incoming value needs special care
             // this would be a lot cleaner with C# 8.0 pattern matching
 
             // serialize the Guid to a Javascript safe object (string)
             if (value is Guid guid)
+            {
                 return SerializeGuid(guid);
+            }
+
             if (value is Version version)
+            {
                 return SerializeVersion(version);
+            }
             // serialize the dictionary 
             if (value is IDictionary dict)
+            {
                 return SerializeDictionary(dict);
+            }
             // serialize the list
             if (value is ICollection collection)
+            {
                 return SerializeCollection(collection);
+            }
             // serialize tuples so they are usable
             if (resultType.IsValueTupleType())
+            {
                 return SerializeTuple(value);
+            }
             // no conversion necessary other than a cast 
             if (resultType.IsEnum)
+            {
                 return (int)value;
+            }
             // all primitive types should be fine as is
             if (value.IsNumber())
+            {
                 return value;
+            }
             // a string doesn't require special conversion.
             if (value is string)
+            {
                 return value;
+            }
             // nor does a boolean
             if (value is bool)
+            {
                 return value;
-
+            }
 
             var typeName = resultType.FullName;
             // no type name, no pass.
@@ -161,14 +183,22 @@ namespace CefSharp.Extensions.ModelBinding
                 switch (typeName)
                 {
                     case "System.Object":
+                    {
                         throw new ModelBindingException(resultType, null, BindingFailureCode.UnsupportedJavascriptType, resultType.FullName, "Returning results must have a valid type to be serialized.");
+                    }
                     case "System.Threading.Tasks.Task":
                     case "System.Threading.Tasks.VoidTaskResult":
+                    {
                         throw new ModelBindingException(resultType, null, BindingFailureCode.UnsupportedJavascriptType, resultType.FullName, "Serialized child objects cannot have a TypeDefinition which inherits Task.");
+                    }
                     case "System.Void":
+                    {
                         throw new ModelBindingException(resultType, null, BindingFailureCode.UnsupportedJavascriptType, resultType.FullName, "Void is not a type that can be serialized.");
+                    }
                     default:
+                    {
                         throw new ModelBindingException(resultType, null, BindingFailureCode.UnsupportedJavascriptType, resultType.FullName, "System types cannot be serialized.");
+                    }
                 }
             }
 
@@ -180,7 +210,9 @@ namespace CefSharp.Extensions.ModelBinding
             }
             // if the underlying value isn't a .NET class or interface, return the value as it is.
             if (!resultType.IsClass && !resultType.IsInterface)
+            {
                 return value;
+            }
 
             var javaScriptObject = new Dictionary<string, object>();
             // I Write Sins Not Tragedies
@@ -261,7 +293,9 @@ namespace CefSharp.Extensions.ModelBinding
             {
                 var key = entry.Key.ToString();
                 if (entry.Key.GetType().IsEnum)
+                {
                     key = ((int)entry.Key).ToString();
+                }
 
                 ret[key] = SerializeObject(entry.Value);
             }
