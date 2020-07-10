@@ -152,7 +152,7 @@ namespace CefSharp.Extensions.ModelBinding
             // no type name, no pass.
             if (string.IsNullOrWhiteSpace(typeName))
             {
-                throw new TypeBindingException(resultType, null, BindingFailureCode.SourceNotAssignable);
+                throw new ModelBindingException(resultType, null, BindingFailureCode.SourceNotAssignable);
             }
             // something has gone horribly wrong, no System types should be on returning objects.
             if (typeName.StartsWith("System."))
@@ -161,20 +161,20 @@ namespace CefSharp.Extensions.ModelBinding
                 switch (typeName)
                 {
                     case "System.Object":
-                        throw new TypeBindingException(resultType, null, BindingFailureCode.UnsupportedJavascriptType, resultType.FullName, "Returning results must have a valid type to be serialized.");
+                        throw new ModelBindingException(resultType, null, BindingFailureCode.UnsupportedJavascriptType, resultType.FullName, "Returning results must have a valid type to be serialized.");
                     case "System.Threading.Tasks.Task":
                     case "System.Threading.Tasks.VoidTaskResult":
-                        throw new TypeBindingException(resultType, null, BindingFailureCode.UnsupportedJavascriptType, resultType.FullName, "Serialized child objects cannot have a TypeDefinition which inherits Task.");
+                        throw new ModelBindingException(resultType, null, BindingFailureCode.UnsupportedJavascriptType, resultType.FullName, "Serialized child objects cannot have a TypeDefinition which inherits Task.");
                     case "System.Void":
-                        throw new TypeBindingException(resultType, null, BindingFailureCode.UnsupportedJavascriptType, resultType.FullName, "Void is not a type that can be serialized.");
+                        throw new ModelBindingException(resultType, null, BindingFailureCode.UnsupportedJavascriptType, resultType.FullName, "Void is not a type that can be serialized.");
                     default:
-                        throw new TypeBindingException(resultType, null, BindingFailureCode.UnsupportedJavascriptType, resultType.FullName, "System types cannot be serialized.");
+                        throw new ModelBindingException(resultType, null, BindingFailureCode.UnsupportedJavascriptType, resultType.FullName, "System types cannot be serialized.");
                 }
             }
 
             if (resultType.IsCustomStruct())
             {
-                throw new TypeBindingException(resultType,
+                throw new ModelBindingException(resultType,
                     null, BindingFailureCode.UnsupportedJavascriptType,
                     resultType.FullName, "Structs are not supported as immutable fields cannot be guaranteed to stay unchanged if this structure is marshaled back to .NET.");
             }
@@ -189,7 +189,7 @@ namespace CefSharp.Extensions.ModelBinding
             var fields = value.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public);
             if (fields.Length > 0)
             {
-                throw new TypeBindingException(resultType,
+                throw new ModelBindingException(resultType,
                     null, BindingFailureCode.UnsupportedJavascriptType,
                     resultType.FullName, "Cannot be serialized because it has public fields. " +
                     "To avoid data leakage, please make the fields private and create a property that uses the underlying field.");

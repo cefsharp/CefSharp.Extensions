@@ -12,7 +12,7 @@ namespace CefSharp.Extensions.ModelBinding
     /// <summary>
     /// An exception that is thrown whenever data cannot be properly marshaled.
     /// </summary>
-    public class TypeBindingException : Exception
+    public class ModelBindingException : Exception
     {
         /// <summary>
         /// The underlying type that was inferred for the source object that needed to be bound 
@@ -32,13 +32,13 @@ namespace CefSharp.Extensions.ModelBinding
         public string ErrorCodeDescription { get; }
 
         /// <summary>
-        /// Creates a new <see cref="TypeBindingException"/> using a backing failure code for which context can be derived.
+        /// Creates a new <see cref="ModelBindingException"/> using a backing failure code for which context can be derived.
         /// </summary>
         /// <param name="sourceObjectType">the inferred type for the object that was meant to be bound.</param>
         /// <param name="destinationType">the destination type the object attempted to be marshaled to.</param>
         /// <param name="errorCode">a failure code that defines the reason the binding process failed.</param>
         /// <param name="formatValues">if present, any values here will be used to format the context string.</param>
-        public TypeBindingException(Type sourceObjectType, Type destinationType, BindingFailureCode errorCode, params object[] formatValues)
+        public ModelBindingException(Type sourceObjectType, Type destinationType, BindingFailureCode errorCode, params object[] formatValues)
         {
             SourceObjectType = sourceObjectType;
             DestinationType = destinationType;
@@ -51,7 +51,7 @@ namespace CefSharp.Extensions.ModelBinding
         }
 
         /// <summary>
-        /// Creates a new <see cref="TypeBindingException"/> without a backing failure code.
+        /// Creates a new <see cref="ModelBindingException"/> without a backing failure code.
         /// </summary>
         /// <param name="sourceObjectType">the inferred type for the object that was meant to be bound.</param>
         /// <param name="destinationType">the destination type the object attempted to be marshaled to.</param>
@@ -59,7 +59,7 @@ namespace CefSharp.Extensions.ModelBinding
         /// <remarks>
         /// the <see cref="ErrorCode"/> property will automatically be set to <see cref="BindingFailureCode.Unavailable"/>
         /// </remarks>
-        public TypeBindingException(Type sourceObjectType, Type destinationType, string context)
+        public ModelBindingException(Type sourceObjectType, Type destinationType, string context)
         {
             SourceObjectType = sourceObjectType;
             DestinationType = destinationType;

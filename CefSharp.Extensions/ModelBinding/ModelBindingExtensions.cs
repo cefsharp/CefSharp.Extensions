@@ -90,7 +90,7 @@ namespace CefSharp.Extensions.ModelBinding
         /// The a member on the destination <see cref="Enum"/> the corresponds to the source object.
         /// </returns>
         /// <exception cref="ArgumentNullException">Thrown when the destination type or source object are null.</exception>
-        /// <exception cref="TypeBindingException">Thrown when the source object cannot be bound to the destination enum.</exception>
+        /// <exception cref="ModelBindingException">Thrown when the source object cannot be bound to the destination enum.</exception>
         /// <remarks>
         /// This method does not rely on Enum.Parse and therefore will never raise any first or second chance exception.
         /// </remarks>
@@ -108,12 +108,12 @@ namespace CefSharp.Extensions.ModelBinding
 
             if (!nativeType.IsEnum)
             {
-                throw new TypeBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.NoEnumAtDestinationType);
+                throw new ModelBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.NoEnumAtDestinationType);
             }
 
             if (!(javaScriptObject is string) && !javaScriptObject.IsEnumIntegral())
             {
-                throw new TypeBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.SourceNotAssignable);
+                throw new ModelBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.SourceNotAssignable);
             }
 
             // if the source object is a number, then these is the only steps we need to run
@@ -127,20 +127,20 @@ namespace CefSharp.Extensions.ModelBinding
                 }
                 // we're throwing because the number is not defined in the enumeration and defaulting to the first member
                 // can cause some serious unintended side effects if a method relies on the enum member to be accurate.
-                throw new TypeBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.NumberNotDefinedInEnum);
+                throw new ModelBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.NumberNotDefinedInEnum);
             }
 
             var javaScriptString = ((string)javaScriptObject).Trim();
             // empty strings are not supported 
             if (javaScriptString.Length == 0)
             {
-                throw new TypeBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.StringNotDefinedInEnum);
+                throw new ModelBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.StringNotDefinedInEnum);
             }
             var destinationMembers = Enum.GetNames(nativeType);
             // make sure the enum is actually defined and has members
             if (destinationMembers.Length == 0)
             {
-                throw new TypeBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.DestinationEnumEmpty);
+                throw new ModelBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.DestinationEnumEmpty);
             }
             // the underlying integral type is important as enums can be things other than int
             var underlyingType = Enum.GetUnderlyingType(nativeType);
@@ -159,7 +159,7 @@ namespace CefSharp.Extensions.ModelBinding
             // the source string is malformed or doesn't contain entries, so we cannot continue.
             if (tokens.Length == 0)
             {
-                throw new TypeBindingException(javaScriptString.GetType(), nativeType, BindingFailureCode.SourceObjectNullOrEmpty);
+                throw new ModelBindingException(javaScriptString.GetType(), nativeType, BindingFailureCode.SourceObjectNullOrEmpty);
             }
 
             ulong ul = 0;
@@ -200,7 +200,7 @@ namespace CefSharp.Extensions.ModelBinding
                     }
                     default:
                     {
-                        throw new TypeBindingException(typeCode.ToType(), nativeType, BindingFailureCode.EnumIntegralNotFound);
+                        throw new ModelBindingException(typeCode.ToType(), nativeType, BindingFailureCode.EnumIntegralNotFound);
                     }
                 }
                 // append the token to the overall value
@@ -219,7 +219,7 @@ namespace CefSharp.Extensions.ModelBinding
         /// <param name="values">The integral values of each enum field.</param>
         /// <param name="sourceString">A string that contains values within the destination enum.</param>
         /// <returns>The value of the enum field that corresponds to the provided string.</returns>
-        /// <exception cref="TypeBindingException">Thrown when the sourceString cannot be assigned to any of the destination enum fields.</exception>
+        /// <exception cref="ModelBindingException">Thrown when the sourceString cannot be assigned to any of the destination enum fields.</exception>
         private static object StringToEnumMember(Type destinationType, Type underlyingType, IReadOnlyList<string> members, Array values, string sourceString)
         {
             // loop over the enums members
@@ -244,7 +244,7 @@ namespace CefSharp.Extensions.ModelBinding
                 return StringToEnumIntegral(underlyingType, sourceString);
             }
             // if the source string is not present in the enum, throw.
-            throw new TypeBindingException(sourceString.GetType(), destinationType, BindingFailureCode.StringNotDefinedInEnum);
+            throw new ModelBindingException(sourceString.GetType(), destinationType, BindingFailureCode.StringNotDefinedInEnum);
         }
 
 
@@ -254,14 +254,14 @@ namespace CefSharp.Extensions.ModelBinding
         /// <param name="destinationType">the type the string should be converted into.</param>
         /// <param name="sourceString">a string that is parseable to a number.</param>
         /// <returns>the converted string as the integral destination type.</returns>
-        /// <exception cref="TypeBindingException">Thrown when the destination type is not a number, or the source string cannot be parsed.</exception>
+        /// <exception cref="ModelBindingException">Thrown when the destination type is not a number, or the source string cannot be parsed.</exception>
         private static object StringToEnumIntegral(Type destinationType, string sourceString)
         {
             // activate an instance of the the destination Type to verify it is a number.
             var instance = Activator.CreateInstance(destinationType);
             if (!instance.IsEnumIntegral())
             {
-                throw new TypeBindingException(typeof(string), destinationType, BindingFailureCode.SourceNotAssignable);
+                throw new ModelBindingException(typeof(string), destinationType, BindingFailureCode.SourceNotAssignable);
             }
             if (instance is int)
             {
@@ -325,7 +325,7 @@ namespace CefSharp.Extensions.ModelBinding
                     return s;
                 }
             }
-            throw new TypeBindingException(typeof(string), destinationType, BindingFailureCode.SourceNotAssignable);
+            throw new ModelBindingException(typeof(string), destinationType, BindingFailureCode.SourceNotAssignable);
         }
 
         /// <summary>
@@ -476,7 +476,7 @@ namespace CefSharp.Extensions.ModelBinding
             // because we use this in the actual binding process, we should be throwing and not allowing invalid entries.
             if (string.IsNullOrWhiteSpace(sourceString))
             {
-                throw new TypeBindingException(typeof(string), typeof(string), BindingFailureCode.SourceObjectNullOrEmpty);
+                throw new ModelBindingException(typeof(string), typeof(string), BindingFailureCode.SourceObjectNullOrEmpty);
             }
 
             // camelCase says that if the string is only one character that it is preserved.

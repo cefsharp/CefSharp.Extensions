@@ -31,7 +31,7 @@ namespace CefSharp.Extensions.ModelBinding
         /// This binder can reliably marshal data between the Javascript and .NET domains. <br/>
         /// For example it provides interoperability for Typescript, Javascript, and C# style conventions without making you drop conventions in one of your languages. <br/>
         /// It will also handle types like <see cref="Guid"/> or <see cref="Enum"/> fields that have flags. <br/>
-        /// Finally it ensure there is type safety by throwing <see cref="TypeBindingException"/> whenever data is malformed so you can catch issues in your code.
+        /// Finally it ensure there is type safety by throwing <see cref="ModelBindingException"/> whenever data is malformed so you can catch issues in your code.
         /// </summary>
         public TypeSafeBinder()
         {
@@ -178,7 +178,7 @@ namespace CefSharp.Extensions.ModelBinding
             // if the Javascript object isn't a collection throw, we shouldn't have ended up here.
             if (!(javaScriptObject is ICollection javaScriptCollection))
             {
-                throw new TypeBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.SourceNotAssignable);
+                throw new ModelBindingException(javaScriptObject.GetType(), nativeType, BindingFailureCode.SourceNotAssignable);
             }
 
             Type genericType;
@@ -276,7 +276,7 @@ namespace CefSharp.Extensions.ModelBinding
                     }
                     // if we failed to find a member on the .NET type whose name is equal to the Javascript member, throw.
                     // most likely the end-user is not using proper conventions on one side.
-                    throw new TypeBindingException(javaScriptType, nativeType, BindingFailureCode.MemberNotFound, javaScriptMember.Key);
+                    throw new ModelBindingException(javaScriptType, nativeType, BindingFailureCode.MemberNotFound, javaScriptMember.Key);
                 }
             }
             return model;
