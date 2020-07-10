@@ -257,26 +257,26 @@ namespace CefSharp.Extensions.ModelBinding
             {
                 // all of the public and assignable Properties from the Destination Type
                 var destinationTypeProperties = destinationType.GetValidProperties().ToList();
+
                 // loop over the Javascript object
                 foreach (var javaScriptMember in (IDictionary<string, object>)javaScriptObject)
                 {
-                    // now for every Javascript member we try to find it's corresponding .NET member on the destination Type 
-                    foreach (var destinationTypeProperty in destinationTypeProperties)
+                    var destinationTypeProperty = destinationTypeProperties.FirstOrDefault(x => string.Equals(x.ConvertNameToCamelCase(), javaScriptMember.Key, StringComparison.Ordinal));
+
+                    if(destinationTypeProperty == null)
                     {
-                        // make sure the destinationTypeMember key (name) is an EXACT match to what would have been bound to the window
-                        if (javaScriptMember.Key.Equals(destinationTypeProperty.ConvertNameToCamelCase()))
-                        {
-                            // bind the Javascript members value to to the destination Type 
-                            var val = Bind(javaScriptMember.Value, destinationTypeProperty.PropertyType);
-                            // and then set it on the instance of the destination type we created
-                            destinationTypeProperty.SetValue(model, val);
-                        }
+                        // if we failed to find a member on the .NET type whose name is equal to the Javascript member, throw.
+                        // most likely the end-user is not using proper conventions on one side.
+                        throw new ModelBindingException(javaScriptType, destinationType, BindingFailureCode.MemberNotFound, javaScriptMember.Key);
                     }
-                    // if we failed to find a member on the .NET type whose name is equal to the Javascript member, throw.
-                    // most likely the end-user is not using proper conventions on one side.
-                    throw new ModelBindingException(javaScriptType, destinationType, BindingFailureCode.MemberNotFound, javaScriptMember.Key);
+
+                    // bind the Javascript members value to to the destination Type 
+                    var val = Bind(javaScriptMember.Value, destinationTypeProperty.PropertyType);
+                    // and then set it on the instance of the destination type we created
+                    destinationTypeProperty.SetValue(model, val);
                 }
             }
+
             return model;
         }
     }

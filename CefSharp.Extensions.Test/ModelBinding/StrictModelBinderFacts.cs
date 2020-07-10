@@ -37,7 +37,7 @@ namespace CefSharp.Extensions.Test.ModelBinding
             IBinder binder = new StrictModelBinder();
             var obj = new Dictionary<string, object>
             {
-                { "anEnum", 2 },
+                { "anEnum", (int)TestEnum.C },
                 { "aString", "SomeValue" },
                 { "aBool", true },
                 { "anInteger", 2.4 },
@@ -47,10 +47,10 @@ namespace CefSharp.Extensions.Test.ModelBinding
             var result = (TestObject)binder.Bind(obj, typeof(TestObject));
 
             Assert.Equal(TestEnum.C, result.AnEnum);
-            Assert.Equal(obj["AString"], result.AString);
-            Assert.Equal(obj["ABool"], result.ABool);
+            Assert.Equal(obj["aString"], result.AString);
+            Assert.Equal(obj["aBool"], result.ABool);
             Assert.Equal(2, result.AnInteger);
-            Assert.Equal(obj["ADouble"], result.ADouble);
+            Assert.Equal(obj["aDouble"], result.ADouble);
         }
 
         [Fact]
