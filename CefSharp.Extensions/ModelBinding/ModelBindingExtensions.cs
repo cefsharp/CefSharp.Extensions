@@ -421,23 +421,13 @@ namespace CefSharp.Extensions.ModelBinding
         }
 
         /// <summary>
-        /// Converts the name of a method into camelCase
+        /// Converts the name of a property/method into camelCase
         /// </summary>
-        /// <param name="method">the method which will have it's name converted</param>
-        /// <returns>the camel case version of the method name.</returns>
-        public static string ConvertNameToCamelCase(this MethodInfo method)
-        {
-            return ConvertNameToCamelCase(method.Name);
-        }
-
-        /// <summary>
-        /// Converts the name of a property into camelCase
-        /// </summary>
-        /// <param name="property">the property which will have it's name converted</param>
+        /// <param name="memberInfo">the property/method which will have it's name converted</param>
         /// <returns>the camel case version of the property name.</returns>
-        public static string ConvertNameToCamelCase(this PropertyInfo property)
+        public static string ConvertNameToCamelCase(this MemberInfo memberInfo)
         {
-            return ConvertNameToCamelCase(property.Name);
+            return ConvertNameToCamelCase(memberInfo.Name);
         }
 
         /// <summary>
@@ -445,7 +435,7 @@ namespace CefSharp.Extensions.ModelBinding
         /// </summary>
         /// <param name="sourceString"></param>
         /// <returns>the string converted to camelCase or preserved based on it's original structure.</returns>
-        private static string ConvertNameToCamelCase(this string sourceString)
+        internal static string ConvertNameToCamelCase(this string sourceString)
         {
             // don't allow whitespace in property names.
             // because we use this in the actual binding process, we should be throwing and not allowing invalid entries.

@@ -30,4 +30,11 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- As per https://www.meziantou.net/declaring-internalsvisibleto-in-the-csproj.htm -->
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>CefSharp.Extensions.Test</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>
