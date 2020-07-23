@@ -26,6 +26,11 @@ build:
   # MSBuild verbosity level
   verbosity: normal
 
+# Test our Release build
+test:
+  assemblies:
+    - CefSharp.Extensions.Test\bin\Release\netcoreapp3.1\CefSharp.Extensions.Test.dll
+
 artifacts:
   - path: '**\*.nupkg'
     name: nupkgfiles
