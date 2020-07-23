@@ -456,14 +456,19 @@ namespace CefSharp.Extensions.ModelBinding
 
             // camelCase says that if the string is only one character that it is preserved.
             if (sourceString.Length == 1)
+            {
                 return sourceString;
+            }
+
+            // camelCase says that if the entire string is uppercase to preserve it.
+            //TODO: We need to cache these values to avoid the cost of validating this
+            if (sourceString.All(char.IsUpper))
+            {
+                return sourceString;
+            }
 
             var firstHalf = sourceString.Substring(0, 1);
             var remainingHalf = sourceString.Substring(1);
-
-            // camelCase says that if the entire string is uppercase to preserve it.
-            if (char.IsUpper(firstHalf[0]) && char.IsUpper(remainingHalf[0]))
-                return sourceString;
 
             return firstHalf.ToLowerInvariant() + remainingHalf;
         }
