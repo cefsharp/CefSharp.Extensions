@@ -10,23 +10,17 @@ skip_commits:
     - '**/*.md'
     - '**/*.html'
     - '**/*.js'
-	
-# .NET Core `*.*proj` files patching:
-#dotnet_csproj:
-  #patch: true
-  #file: '**\*.csproj'
-  #version: '{version}'
-  #version_prefix: '{version}'
-  #package_version: '{version}'
-  #assembly_version: '{version}'
-  #file_version: '{version}'
-  #informational_version: '{version}'
+
+# build platform, i.e. x86, x64, Any CPU. This setting is optional.
+platform: Any CPU
+
+# build Configuration, i.e. Debug, Release, etc.
+configuration: Release
 
 build:
   project: CefSharp.Extensions.sln
-
-# TODO: Enable Tests
-test: Off
+  # MSBuild verbosity level
+  verbosity: normal
 
 artifacts:
   - path: '**\*.nupkg'
@@ -41,3 +35,6 @@ deploy:
   skip_symbols: false
   symbol_server: https://www.myget.org/F/cefsharp/api/v2/package
   artifact: nupkgfiles
+  on:
+      branch: master                # release from master branch only
+      APPVEYOR_REPO_TAG: true       # deploy on tag push only
