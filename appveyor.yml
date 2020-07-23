@@ -1,0 +1,43 @@
+image: Visual Studio 2019
+
+version: 83.4.20-CI{build}
+
+clone_depth: 10
+
+#Skip builing if we only modify text files
+skip_commits:
+  files:
+    - '**/*.md'
+    - '**/*.html'
+    - '**/*.js'
+	
+# .NET Core `*.*proj` files patching:
+#dotnet_csproj:
+  #patch: true
+  #file: '**\*.csproj'
+  #version: '{version}'
+  #version_prefix: '{version}'
+  #package_version: '{version}'
+  #assembly_version: '{version}'
+  #file_version: '{version}'
+  #informational_version: '{version}'
+
+build:
+  project: CefSharp.Extensions.sln
+
+# TODO: Enable Tests
+test: Off
+
+artifacts:
+  - path: '**\*.nupkg'
+    name: nupkgfiles
+
+# Publish to myget.org feed
+deploy:
+  provider: NuGet
+  server: https://www.myget.org/F/cefsharp/api/v2/package
+  api_key:
+    secure: Zf7UgKf482O82zGWbbPjL+tIK9Y6R1pEHpLgoSZCfuzl4SLfjchqL1MHdlBlb4IY
+  skip_symbols: false
+  symbol_server: https://www.myget.org/F/cefsharp/api/v2/package
+  artifact: nupkgfiles

@@ -3,12 +3,31 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <CefSharpAnyCpuSupport>true</CefSharpAnyCpuSupport>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>83.4.20-pre</Version>
+    <Authors>The CefSharp Authors</Authors>
+    <Description>CefSharp Extensions (Advanced Features). Targeting .Net Standard 2.0 for access to advanced features.</Description>
+    <Copyright>Copyright © The CefSharp Authors</Copyright>
+    <RepositoryUrl>https://github.com/cefsharp/CefSharp.Extensions/</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/cefsharp/CefSharp.Extensions/</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\CefSharp.Extensions.xml</DocumentationFile>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <EmbedAllSources>true</EmbedAllSources>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CefSharp.Common" Version="83.4.20" />
     <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
