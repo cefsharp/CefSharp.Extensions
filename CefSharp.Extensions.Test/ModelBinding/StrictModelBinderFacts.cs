@@ -102,29 +102,6 @@ namespace CefSharp.Extensions.Test.ModelBinding
         }
 
         [Fact]
-        public void BindArrayWithNullElementToIntArray()
-        {
-            var arrayType = typeof(int[]);
-
-            IBinder binder = new StrictModelBinder();
-            var obj = new List<object> { 10, 20, null, 30 };
-            var result = binder.Bind(obj, arrayType);
-
-            Assert.NotNull(result);
-            Assert.Equal(arrayType, result.GetType());
-
-            var arr = (int[])result;
-            Assert.Equal(obj.Count, arr.Length);
-
-            for (int i = 0; i < obj.Count; i++)
-            {
-                var expected = obj[i] ?? 0;
-                var actual = arr[i];
-                Assert.Equal(expected, actual);
-            }
-        }
-
-        [Fact]
         public void BindListOfNumbersToDoubleArray()
         {
             var doubleArrayType = typeof(double[]);
